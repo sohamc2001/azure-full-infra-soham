@@ -1,0 +1,49 @@
+name: Terraform CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Terraform Init
+      working-directory: ./terraform
+      run: terraform init
+
+    - name: Terraform Plan
+      working-directory: ./terraform
+      run: terraform plan
+
+    - name: Terraform Apply
+      working-directory: ./terraform
+      run: terraform apply -auto-approve
+
+    - name: Get App Service Hostname
+      id: get_hostname
+      working-directory: ./terraform
+      run: echo "hostname=$(terraform output -raw app_service_default_hostname)" >> $GITHUB_OUTPUT
+
+    - name: Deploy Static HTML to App Service
+      run: |
+        zip -r app.zip ./app
+        az webapp deployment source config-zip \
+          --resource-group demo-rg-full-infra \
+          --name ${{ steps.get_hostname.outputs.hostname }} \
+          --src app.zip
