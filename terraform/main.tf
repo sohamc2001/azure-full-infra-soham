@@ -16,10 +16,6 @@ provider "azurerm" {
   features {}
 }
 
-variable "location" {
-  default = "East US"  # You can change this or pass as input
-}
-
 resource "azurerm_resource_group" "rg" {
   name     = "soham-rg-full-infra"
   location = var.location
