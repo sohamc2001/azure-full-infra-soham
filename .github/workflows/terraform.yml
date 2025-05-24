@@ -34,16 +34,3 @@ jobs:
     - name: Terraform Apply
       working-directory: ./terraform
       run: terraform apply -auto-approve
-
-    - name: Get App Service Hostname
-      id: get_hostname
-      working-directory: ./terraform
-      run: echo "hostname=$(terraform output -raw app_service_default_hostname)" >> $GITHUB_OUTPUT
-
-    - name: Deploy Static HTML to App Service
-      run: |
-        zip -r app.zip ./app
-        az webapp deployment source config-zip \
-          --resource-group demo-rg-full-infra \
-          --name ${{ steps.get_hostname.outputs.hostname }} \
-          --src app.zip
