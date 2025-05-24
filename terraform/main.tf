@@ -16,6 +16,10 @@ provider "azurerm" {
   features {}
 }
 
+variable "location" {
+  default = "East US"  # You can change this or pass as input
+}
+
 resource "azurerm_resource_group" "rg" {
   name     = "soham-rg-full-infra"
   location = var.location
@@ -120,26 +124,4 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
   computer_name                 = "soham-vm"
   disable_password_authentication = false
-}
-
-resource "azurerm_app_service_plan" "asp" {
-  name                = "soham-appserviceplan"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  kind                = "App"
-  sku {
-    tier = "Free"
-    size = "F1"
-  }
-}
-
-resource "azurerm_app_service" "app" {
-  name                = "soham-appservice-${random_id.suffix.hex}"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  app_service_plan_id = azurerm_app_service_plan.asp.id
-}
-
-resource "random_id" "suffix" {
-  byte_length = 4
 }
